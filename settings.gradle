@@ -63,4 +63,4 @@ include ':app',
         ':sdk',
         ':framework'
 
-include_with_api(':plugin-sdk')
+//include_with_api(':plugin-sdk')

@@ -3,4 +3,34 @@ Configuration configurationtest = project.configurations.create("compileApi")
 //当该依赖配置被解析时会执行
 configurationtest.allDependencies.all {obj->
     println("xxxxxxxx = "+obj.name)
+    include_with_api(obj.name)
+}
+
+
+def include_with_api(def parentName) {
+    def sdkDir = '../' + parentName + '/src/main/'
+    copy() {
+        from  sdkDir
+        into '/src/main/'
+        include '**/*.api'
+        rename {
+            String fileName -> fileName.replace('api', 'java')
+        }    // 使用正则表达式映射文件名
+    }
+    api2Java(file(sdkDir))
+}
+
+def api2Java(File f) {
+    if (f.isFile()) {
+        if (f.name.endsWith('.api')) {
+            println("del file:" + f.name)
+            f.renameTo(f.getAbsolutePath().replace('api', 'java'))
+        }
+    } else {
+        f.listFiles().each {
+            a ->
+                api2Java(a)
+        }
+    }
+
 }
