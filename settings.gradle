@@ -1,0 +1,66 @@
+def include_with_api(def projectName) {
+    include projectName
+    String rootDir = rootDir.getAbsolutePath()
+    String moduleName = ((String) projectName).replace(":", "")
+    String parentName = moduleName.replace("plugin-", "")
+    println('projectName=' + projectName)
+    copy() {
+        from rootDir + '/' + parentName + '/build.gradle'
+        into rootDir + '/' + moduleName + '/'
+        filter { line ->
+            String content = line
+            if (content.contains(moduleName)) {
+                content = ""
+            }
+            content
+        }
+    }
+
+    copy() {
+        from rootDir + '/' + parentName + '/src/main/AndroidManifest.xml'
+        into rootDir + '/' + moduleName + '/src/main/'
+        filter { line ->
+            String content = line;
+            content = content.replace("android:label=\"@string/app_name\"", "")
+            if (content.contains("package=\"")) {
+                content = content.replace("\">", ".plugin\">")
+            }
+            content
+        }
+    }
+
+
+
+    copy() {
+        from rootDir + '/' + parentName + '/src/main/'
+        into rootDir + '/' + moduleName + '/src/main/'
+        include '**/*.api'
+        rename {
+            String fileName -> fileName.replace('api', 'java')
+        }    // 使用正则表达式映射文件名
+    }
+    api2Java(file(parentName))
+}
+
+def api2Java(File f) {
+    if (f.isFile()) {
+        if (f.name.endsWith('.api')) {
+            println("del file:" + f.name)
+            f.renameTo(f.getAbsolutePath().replace('api', 'java'))
+        }
+    } else {
+        f.listFiles().each {
+            a ->
+                api2Java(a)
+        }
+    }
+
+}
+
+include ':app',
+        ':sdk',
+        ':net',
+        ':sdk',
+        ':framework'
+
+include_with_api(':plugin-sdk')
