@@ -2,7 +2,6 @@ Configuration configurationtest = project.configurations.create("compileApi")
 
 //当该依赖配置被解析时会执行
 configurationtest.allDependencies.all {obj->
-    println("xxxxxxxx = "+obj.name)
     include_with_api(obj.name)
 }
 
