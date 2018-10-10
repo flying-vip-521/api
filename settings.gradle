@@ -1,4 +1,4 @@
-include ':app',
+include ':app', ':net2',
         ':sdk',
         ':net',
         ':sdk',

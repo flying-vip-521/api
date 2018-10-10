@@ -1,22 +1,30 @@
 Configuration configurationtest = project.configurations.create("compileApi")
 
-//当该依赖配置被解析时会执行
-configurationtest.allDependencies.all {obj->
+configurationtest.allDependencies.all { obj ->
     include_with_api(obj.name)
 }
 
-
 def include_with_api(def parentName) {
-    def sdkDir = '../' + parentName + '/src/main/'
+    def sdkDir = rootDir.getAbsolutePath() + "/" + parentName + '/src/main/'
+    def apiDir = rootDir.getAbsolutePath() + "/" + parentName + '/api/'
+    def apiFile = new File(apiDir)
+    boolean create = apiFile.mkdirs()
+    println("create api dir : " + create)
     copy() {
-        from  sdkDir
-        into '/src/main/'
+        from sdkDir
+        into apiDir
+        include '**/*.api'
+        exclude('res')
+    }
+    api2Java(file(sdkDir))
+    copy() {
+        from apiDir
+        into '/src/main'
         include '**/*.api'
         rename {
             String fileName -> fileName.replace('api', 'java')
-        }    // 使用正则表达式映射文件名
+        }
     }
-    api2Java(file(sdkDir))
 }
 
 def api2Java(File f) {
@@ -31,5 +39,4 @@ def api2Java(File f) {
                 api2Java(a)
         }
     }
-
 }
